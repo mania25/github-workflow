@@ -1,0 +1,54 @@
+name: Deploy to Kubernetes
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+
+jobs:
+  deploy-infrastructure:
+    runs-on: [self-hosted, macOS, local]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+
+    - name: Create namespace
+      run: kubectl apply -f k8s/namespace.yaml
+
+    - name: Deploy PostgreSQL
+      run: kubectl apply -f k8s/postgres.yaml
+
+    - name: Wait for PostgreSQL to be ready
+      run: kubectl wait --for=condition=ready pod -l app=postgres -n pgn --timeout=300s
+
+    - name: Update backend image references
+      run: |
+        sed -i 's/YOUR_REGISTRY/pgn/g' k8s/backend.yaml
+        sed -i 's/YOUR_REGISTRY/pgn/g' k8s/frontend.yaml
+
+    - name: Deploy backend
+      run: kubectl apply -f k8s/backend.yaml
+
+    - name: Deploy frontend
+      run: kubectl apply -f k8s/frontend.yaml
+
+    - name: Deploy ingress (optional)
+      run: kubectl apply -f k8s/ingress.yaml
+      continue-on-error: true
+
+    - name: Get service URLs
+      run: |
+        echo "Waiting for services to be ready..."
+        kubectl wait --for=condition=ready pod -l app=backend -n pgn --timeout=300s
+        kubectl wait --for=condition=ready pod -l app=frontend -n pgn --timeout=300s
+        
+        echo "Service endpoints:"
+        kubectl get services -n pgn
