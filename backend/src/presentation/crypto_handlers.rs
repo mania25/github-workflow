@@ -6,9 +6,8 @@ use axum::{
     Json as RequestJson,
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
 
-use crate::infrastructure::PQCrypto;
+use crate::presentation::handlers::AppState;
 
 #[derive(Deserialize)]
 pub struct KeyExchangeRequest {
@@ -20,12 +19,8 @@ pub struct KeyExchangeResponse {
     pub server_public_key: Vec<u8>,
 }
 
-pub struct CryptoState {
-    pub crypto: Arc<PQCrypto>,
-}
-
 pub async fn exchange_keys(
-    State(state): State<Arc<CryptoState>>,
+    State(state): State<Arc<AppState>>,
     RequestJson(request): RequestJson<KeyExchangeRequest>,
 ) -> Result<Json<KeyExchangeResponse>, StatusCode> {
     let client_public_key = request.public_key;

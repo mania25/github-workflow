@@ -4,7 +4,7 @@ metadata:
   name: backend-config
   namespace: pgn
 data:
-  DATABASE_URL: "postgresql://postgres:password@postgres-service:5432/todoapp"
+  DATABASE_URL: "sqlite:/data/todos.db"
   RUST_LOG: "info"
 
 ---
@@ -31,6 +31,9 @@ spec:
         envFrom:
         - configMapRef:
             name: backend-config
+        volumeMounts:
+        - name: sqlite-storage
+          mountPath: /data
         resources:
           requests:
             memory: "128Mi"
@@ -50,6 +53,9 @@ spec:
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
+      volumes:
+      - name: sqlite-storage
+        emptyDir: {}
 
 ---
 apiVersion: v1

@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use sqlx::{PgPool, Row};
+use sqlx::{SqlitePool, Row};
 use uuid::Uuid;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -8,12 +8,12 @@ use crate::application::TodoRepository;
 use crate::domain::Todo;
 
 #[derive(Clone)]
-pub struct PostgresTodoRepository {
-    pool: Arc<PgPool>,
+pub struct SqliteTodoRepository {
+    pool: Arc<SqlitePool>,
 }
 
-impl PostgresTodoRepository {
-    pub fn new(pool: Arc<PgPool>) -> Self {
+impl SqliteTodoRepository {
+    pub fn new(pool: Arc<SqlitePool>) -> Self {
         Self { pool }
     }
 
@@ -24,7 +24,7 @@ impl PostgresTodoRepository {
 }
 
 #[async_trait]
-impl TodoRepository for PostgresTodoRepository {
+impl TodoRepository for SqliteTodoRepository {
     async fn find_all(&self) -> Result<Vec<Todo>> {
         let rows = sqlx::query(
             "SELECT id, title, description, completed, created_at, updated_at FROM todos ORDER BY created_at DESC"
@@ -49,7 +49,7 @@ impl TodoRepository for PostgresTodoRepository {
 
     async fn find_by_id(&self, id: Uuid) -> Result<Option<Todo>> {
         let row = sqlx::query(
-            "SELECT id, title, description, completed, created_at, updated_at FROM todos WHERE id = $1"
+            "SELECT id, title, description, completed, created_at, updated_at FROM todos WHERE id = ?1"
         )
         .bind(id)
         .fetch_optional(self.pool.as_ref())
@@ -73,7 +73,7 @@ impl TodoRepository for PostgresTodoRepository {
         sqlx::query(
             r#"
             INSERT INTO todos (id, title, description, completed, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6)
             "#
         )
         .bind(&todo.id)
@@ -92,8 +92,8 @@ impl TodoRepository for PostgresTodoRepository {
         sqlx::query(
             r#"
             UPDATE todos
-            SET title = $2, description = $3, completed = $4, updated_at = $5
-            WHERE id = $1
+            SET title = ?2, description = ?3, completed = ?4, updated_at = ?5
+            WHERE id = ?1
             "#
         )
         .bind(&todo.id)
@@ -108,7 +108,7 @@ impl TodoRepository for PostgresTodoRepository {
     }
 
     async fn delete(&self, id: Uuid) -> Result<()> {
-        sqlx::query("DELETE FROM todos WHERE id = $1")
+        sqlx::query("DELETE FROM todos WHERE id = ?1")
             .bind(id)
             .execute(self.pool.as_ref())
             .await?;
