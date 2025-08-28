@@ -7,6 +7,7 @@ use ring::{
 use std::collections::HashMap;
 use std::sync::Mutex;
 
+#[allow(dead_code)]
 pub struct PQCrypto {
     server_key: aead::LessSafeKey,
     rng: SystemRandom,
@@ -53,6 +54,7 @@ impl PQCrypto {
         Ok(session_key_bytes)
     }
 
+    #[allow(dead_code)]
     pub fn encrypt(&self, data: &str) -> Result<String> {
         let mut nonce_bytes = [0u8; 12];
         self.rng
@@ -72,6 +74,7 @@ impl PQCrypto {
         Ok(general_purpose::STANDARD.encode(&result))
     }
 
+    #[allow(dead_code)]
     pub fn decrypt(&self, encrypted_data: &str) -> Result<String> {
         let data = general_purpose::STANDARD
             .decode(encrypted_data)
@@ -95,6 +98,7 @@ impl PQCrypto {
             .map_err(|_| anyhow!("Invalid UTF-8 in decrypted data"))
     }
 
+    #[allow(dead_code)]
     pub fn decrypt_with_session(
         &self,
         encrypted_data: &str,

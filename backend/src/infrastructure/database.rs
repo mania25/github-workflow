@@ -78,12 +78,12 @@ impl TodoRepository for SqliteTodoRepository {
             VALUES (?1, ?2, ?3, ?4, ?5, ?6)
             "#,
         )
-        .bind(&todo.id)
+        .bind(todo.id)
         .bind(&todo.title)
         .bind(&todo.description)
-        .bind(&todo.completed)
-        .bind(&todo.created_at)
-        .bind(&todo.updated_at)
+        .bind(todo.completed)
+        .bind(todo.created_at)
+        .bind(todo.updated_at)
         .execute(self.pool.as_ref())
         .await?;
 
@@ -98,11 +98,11 @@ impl TodoRepository for SqliteTodoRepository {
             WHERE id = ?1
             "#,
         )
-        .bind(&todo.id)
+        .bind(todo.id)
         .bind(&todo.title)
         .bind(&todo.description)
-        .bind(&todo.completed)
-        .bind(&todo.updated_at)
+        .bind(todo.completed)
+        .bind(todo.updated_at)
         .execute(self.pool.as_ref())
         .await?;
 

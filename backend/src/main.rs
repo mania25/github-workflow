@@ -7,7 +7,6 @@ use anyhow::Result;
 use dotenv::dotenv;
 use sqlx::SqlitePool;
 use std::sync::Arc;
-use tracing_subscriber;
 
 use application::TodoService;
 use infrastructure::{PQCrypto, SqliteTodoRepository};
