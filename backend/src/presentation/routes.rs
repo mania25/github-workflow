@@ -1,12 +1,12 @@
-use std::sync::Arc;
 use axum::{
-    routing::{get, post, put, delete},
+    routing::{delete, get, post, put},
     Router,
 };
-use tower_http::cors::{CorsLayer, Any};
+use std::sync::Arc;
+use tower_http::cors::{Any, CorsLayer};
 
-use super::handlers::{AppState, get_todos, get_todo, create_todo, update_todo, delete_todo};
 use super::crypto_handlers::exchange_keys;
+use super::handlers::{create_todo, delete_todo, get_todo, get_todos, update_todo, AppState};
 
 pub fn create_router(state: Arc<AppState>) -> Router {
     Router::new()

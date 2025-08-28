@@ -1,12 +1,12 @@
-use std::sync::Arc;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
     response::Json,
     Json as RequestJson,
 };
-use uuid::Uuid;
 use serde_json::{json, Value};
+use std::sync::Arc;
+use uuid::Uuid;
 
 use crate::application::TodoService;
 use crate::domain::{CreateTodoRequest, UpdateTodoRequest};
@@ -17,9 +17,7 @@ pub struct AppState {
     pub crypto: Arc<PQCrypto>,
 }
 
-pub async fn get_todos(
-    State(state): State<Arc<AppState>>,
-) -> Result<Json<Value>, StatusCode> {
+pub async fn get_todos(State(state): State<Arc<AppState>>) -> Result<Json<Value>, StatusCode> {
     match state.todo_service.get_all_todos().await {
         Ok(todos) => Ok(Json(json!(todos))),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),

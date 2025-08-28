@@ -1,8 +1,8 @@
+use anyhow::Result;
 use std::sync::Arc;
 use uuid::Uuid;
-use anyhow::Result;
 
-use crate::domain::{Todo, CreateTodoRequest, UpdateTodoRequest};
+use crate::domain::{CreateTodoRequest, Todo, UpdateTodoRequest};
 
 #[async_trait::async_trait]
 pub trait TodoRepository: Send + Sync {

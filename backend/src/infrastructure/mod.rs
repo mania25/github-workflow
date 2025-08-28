@@ -1,5 +1,5 @@
-pub mod database;
 pub mod crypto;
+pub mod database;
 
-pub use database::*;
 pub use crypto::*;
+pub use database::*;

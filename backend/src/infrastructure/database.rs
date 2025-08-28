@@ -1,8 +1,8 @@
-use std::sync::Arc;
-use sqlx::{SqlitePool, Row};
-use uuid::Uuid;
 use anyhow::Result;
 use async_trait::async_trait;
+use sqlx::{Row, SqlitePool};
+use std::sync::Arc;
+use uuid::Uuid;
 
 use crate::application::TodoRepository;
 use crate::domain::Todo;
@@ -18,7 +18,9 @@ impl SqliteTodoRepository {
     }
 
     pub async fn migrate(&self) -> Result<()> {
-        sqlx::migrate!("./migrations").run(self.pool.as_ref()).await?;
+        sqlx::migrate!("./migrations")
+            .run(self.pool.as_ref())
+            .await?;
         Ok(())
     }
 }
@@ -74,7 +76,7 @@ impl TodoRepository for SqliteTodoRepository {
             r#"
             INSERT INTO todos (id, title, description, completed, created_at, updated_at)
             VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-            "#
+            "#,
         )
         .bind(&todo.id)
         .bind(&todo.title)
@@ -94,7 +96,7 @@ impl TodoRepository for SqliteTodoRepository {
             UPDATE todos
             SET title = ?2, description = ?3, completed = ?4, updated_at = ?5
             WHERE id = ?1
-            "#
+            "#,
         )
         .bind(&todo.id)
         .bind(&todo.title)
