@@ -59,17 +59,16 @@ export class PQCrypto {
 
     if (typeof window === 'undefined') {
       const crypto = await import('crypto');
-      const algorithm = 'aes-256-gcm';
+      const algorithm = 'aes-256-cbc';
       const key = this.serverPublicKey.slice(0, 32);
       const iv = crypto.randomBytes(16);
       
-      const cipher = crypto.createCipherGCM(algorithm, key);
-      cipher.setAAD(Buffer.from('todo-app'));
+      const cipher = crypto.createCipher(algorithm, Buffer.from(key));
+      cipher.setAutoPadding(true);
       let encrypted = cipher.update(data, 'utf8', 'hex');
       encrypted += cipher.final('hex');
-      const authTag = cipher.getAuthTag();
       
-      return Buffer.concat([iv, authTag, Buffer.from(encrypted, 'hex')]).toString('base64');
+      return Buffer.concat([iv, Buffer.from(encrypted, 'hex')]).toString('base64');
     } else {
       const encoder = new TextEncoder();
       const dataBuffer = encoder.encode(data);
@@ -94,7 +93,7 @@ export class PQCrypto {
       result.set(iv, 0);
       result.set(new Uint8Array(encrypted), iv.length);
       
-      return btoa(String.fromCharCode(...result));
+      return btoa(String.fromCharCode.apply(null, Array.from(result)));
     }
   }
 
@@ -105,17 +104,15 @@ export class PQCrypto {
 
     if (typeof window === 'undefined') {
       const crypto = await import('crypto');
-      const algorithm = 'aes-256-gcm';
+      const algorithm = 'aes-256-cbc';
       const key = this.keyPair.secretKey.slice(0, 32);
       const buffer = Buffer.from(encryptedData, 'base64');
       const iv = buffer.slice(0, 16);
-      const authTag = buffer.slice(16, 32);
-      const encrypted = buffer.slice(32);
+      const encrypted = buffer.slice(16);
       
-      const decipher = crypto.createDecipherGCM(algorithm, key);
-      decipher.setAuthTag(authTag);
-      decipher.setAAD(Buffer.from('todo-app'));
-      let decrypted = decipher.update(encrypted, null, 'utf8');
+      const decipher = crypto.createDecipher(algorithm, Buffer.from(key));
+      decipher.setAutoPadding(true);
+      let decrypted = decipher.update(encrypted, undefined, 'utf8');
       decrypted += decipher.final('utf8');
       
       return decrypted;
