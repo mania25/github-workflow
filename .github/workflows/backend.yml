@@ -52,7 +52,7 @@ jobs:
     - name: Run tests
       run: cargo test
       env:
-        DATABASE_URL: sqlite::memory:
+        DATABASE_URL: "sqlite::memory:"
 
     - name: Build binary
       run: cargo build --release
