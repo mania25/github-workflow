@@ -4,7 +4,7 @@ metadata:
   name: backend-config
   namespace: pgn
 data:
-  DATABASE_URL: "sqlite:/data/todos.db"
+  DATABASE_URL: "sqlite:/tmp/todos.db"
   RUST_LOG: "info"
 
 ---
@@ -14,7 +14,7 @@ metadata:
   name: backend
   namespace: pgn
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -23,17 +23,18 @@ spec:
       labels:
         app: backend
     spec:
+      imagePullSecrets:
+      - name: digitalocean-registry
+      securityContext:
+        fsGroup: 1001
       containers:
       - name: backend
-        image: registry.digitalocean.com/pgn/todo-backend:latest
+        image: registry.digitalocean.com/pgn/todo-backend:fixed
         ports:
         - containerPort: 8080
         envFrom:
         - configMapRef:
             name: backend-config
-        volumeMounts:
-        - name: sqlite-storage
-          mountPath: /data
         resources:
           requests:
             memory: "128Mi"
@@ -53,9 +54,6 @@ spec:
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
-      volumes:
-      - name: sqlite-storage
-        emptyDir: {}
 
 ---
 apiVersion: v1

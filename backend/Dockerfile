@@ -12,18 +12,20 @@ COPY . .
 RUN touch src/main.rs
 RUN cargo build --release
 
-FROM alpine:3.20 AS runtime
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 
-RUN apk add --no-cache ca-certificates
-RUN addgroup -g 1001 -S appgroup
-RUN adduser -S appuser -u 1001 -G appgroup
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN groupadd -g 1001 appgroup
+RUN useradd -r -u 1001 -g appgroup appuser
 
-COPY --from=builder /app/target/release/todo-backend ./app
-RUN chown appuser:appgroup ./app
+COPY --from=builder /app/target/release/todo-backend ./todo-backend
+COPY init-db.sh ./init-db.sh
+RUN chown appuser:appgroup ./todo-backend ./init-db.sh
+RUN chmod +x ./init-db.sh
 
 USER appuser
 
 EXPOSE 8080
 
-CMD ["./app"]
+CMD ["./init-db.sh"]
